@@ -1,0 +1,163 @@
+{
+  "name": "live-code",
+  "displayName": "Live Code",
+  "publisher": "ambar",
+  "description": "Interactive code playground",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": {
+    "url": "https://github.com/ambar/vscode-live-code.git",
+    "directory": "vscode-live-code"
+  },
+  "engines": {
+    "vscode": "^1.61.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
+  ],
+  "icon": "images/logo.png",
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "liveCode.openPreviewToSide",
+        "title": "Open Preview to the Side",
+        "category": "Live Code",
+        "icon": "images/logo.svg"
+      },
+      {
+        "command": "liveCode.changePlatform",
+        "title": "Change Platform",
+        "category": "Live Code",
+        "icon": "$(notebook-kernel-select)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "liveCode.openPreviewToSide",
+          "when": "editorLangId in liveCode.supportedLanguageIds",
+          "group": "liveCode"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "liveCode.openPreviewToSide",
+          "when": "editorLangId in liveCode.supportedLanguageIds",
+          "group": "navigation"
+        },
+        {
+          "command": "liveCode.changePlatform",
+          "when": "liveCode.isPreviewFocus",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "liveCode.openPreviewToSide",
+        "key": "ctrl+k l",
+        "mac": "cmd+k l",
+        "when": "editorLangId in liveCode.supportedLanguageIds && !liveCode.isPreviewFocus"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Live Code",
+      "properties": {
+        "liveCode.defaultPlatform": {
+          "type": "string",
+          "default": "browser",
+          "description": "Set the execution environment for the preview",
+          "enum": [
+            "browser",
+            "node"
+          ],
+          "enumDescriptions": [
+            "Execute code in web browser",
+            "Execute code in Node.js"
+          ]
+        },
+        "liveCode.renderJSX": {
+          "type": "boolean",
+          "default": true,
+          "description": "Wether to render JSX elements in the preview panel (browser platform only)"
+        },
+        "liveCode.showLineNumbers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Wether to show line numbers in the preview panel"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "prepare": "yarn copy && yarn build",
+    "build:vscode": "vsce package --yarn",
+    "vscode:prepublish": "npm run build",
+    "prewatch": "yarn setup",
+    "watch": "node scripts/build-all.mjs --watch --sourcemap",
+    "setup": "rm -rf out/** && yarn copy",
+    "copy": "node scripts/copy.mjs",
+    "prebuild": "yarn setup",
+    "build": "node scripts/build-all.mjs --minify",
+    "build:extension": "node scripts/build-preview.mjs",
+    "build:preview": "node scripts/build-preview.mjs",
+    "lint": "recommended",
+    "test": "jest"
+  },
+  "prettier": "@recommended/prettier-config",
+  "eslintConfig": {
+    "extends": [
+      "@recommended/eslint-config"
+    ],
+    "rules": {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "varsIgnorePattern": "^_",
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
+  },
+  "jest": {
+    "preset": "es-jest",
+    "collectCoverageFrom": [
+      "src/**/*"
+    ]
+  },
+  "dependencies": {
+    "esbuild": "^0.13.12"
+  },
+  "devDependencies": {
+    "@emotion/react": "^11.5.0",
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.2",
+    "@types/jest": "^27.0.2",
+    "@types/node": "14.x",
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "@types/react-inspector": "^4.0.2",
+    "@types/vscode": "^1.61.0",
+    "@vscode/webview-ui-toolkit": "^0.8.3",
+    "console-feed": "samdenty/console-feed#0405ab2",
+    "es-jest": "^1.4.1",
+    "is-promise": "^4.0.0",
+    "jest": "^27.3.1",
+    "node-fetch-cache": "^3.0.3",
+    "pretty-format": "^27.3.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-inspector": "^5.1.1",
+    "recast": "^0.20.5",
+    "recommended": "^0.0.7",
+    "shiki": "^0.9.12",
+    "typescript": "^4.4.3"
+  }
+}
