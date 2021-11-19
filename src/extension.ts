@@ -5,6 +5,7 @@ import * as vscode from 'vscode'
 import type {Platform, AnyFunction} from './types'
 import bundle from './extension/bundle'
 import install from './extension/install'
+import timeMark from './extension/timeMark'
 import getWebviewContent from './extension/getWebviewContent'
 import transform from './sandbox/transform'
 import * as nodeVM from './sandbox/nodeVM'
@@ -221,19 +222,24 @@ async function processDocument(
   let error: unknown
   let code: string | void
   let result: [string, ExpContext][] | void
+  const timer = timeMark<'bundle' | 'nodeVM' | 'postMessage'>()
+  timer.start('bundle')
   ;[error, code] = await of(
     bundleDocument(document, currentPlatform).then((r) => {
       // TODO: render .css
       return r?.js
     })
   )
+  timer.end('bundle')
   if (code && currentPlatform === 'node') {
+    timer.start('nodeVM')
     ;[error, result] = await of(
       nodeVM.runInNewContext(code, {filename: document.uri.fsPath})
     )
+    timer.end('nodeVM')
   }
-  log('bundle', {error, result})
-  void panel.webview.postMessage({
+  timer.start('postMessage')
+  await panel.webview.postMessage({
     type: shouldReload ? 'codeReload' : 'code',
     // data should be serialized
     data: {
@@ -244,6 +250,8 @@ async function processDocument(
       error: error && prettyPrint(error),
     },
   })
+  timer.end('postMessage')
+  log(timer.print())
 }
 
 function debounce<T extends AnyFunction<void>>(fn: T, wait: number) {
