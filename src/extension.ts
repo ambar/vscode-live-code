@@ -5,11 +5,12 @@ import * as vscode from 'vscode'
 import type {Platform, AnyFunction} from './types'
 import bundle from './extension/bundle'
 import install from './extension/install'
-import timeMark from './extension/timeMark'
 import getWebviewContent from './extension/getWebviewContent'
 import transform from './sandbox/transform'
 import * as nodeVM from './sandbox/nodeVM'
 import type {ExpContext} from './sandbox/types'
+import timeMark from './utils/timeMark'
+import {of} from './utils/promise'
 
 const NAME = 'Live Code'
 const output = vscode.window.createOutputChannel(NAME)
@@ -162,13 +163,17 @@ export function activate(context: vscode.ExtensionContext) {
       setPanelTitleAndIcon(panel, doc)
       setWebviewContent(panel.webview)
       panel.webview.onDidReceiveMessage((e: {type: string; data: unknown}) => {
-        log('onDidReceiveMessage', e)
+        if (e.type !== 'timeMark') {
+          log('onDidReceiveMessage', e)
+        }
         if (e.type === 'ready') {
           void processDocument(doc)
         } else if (e.type === 'revealLine') {
           revealSourceLine(e.data)
         } else if (e.type === 'requestReload') {
           void vscode.commands.executeCommand('liveCode.reloadPreview')
+        } else if (e.type === 'timeMark') {
+          log(e.data)
         }
       })
       const setIsPreviewFocus = (value: boolean) => {
@@ -201,12 +206,6 @@ const prettyPrint = (obj: unknown) =>
     min: true,
     printFunctionName: true,
   })
-
-const of = <T>(value: Promise<T>) => {
-  return value
-    .then((r) => <const>[null, r])
-    .catch((err: unknown) => <const>[err, void 0])
-}
 
 async function processDocument(
   document: vscode.TextDocument,

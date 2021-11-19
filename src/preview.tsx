@@ -12,12 +12,23 @@ import {IsDarkModeProvider, useIsDarkMode} from './preview/darkMode'
 import ErrorBoundary from './preview/ErrorBoundary'
 import Inspector from './preview/Inspector'
 import {AppConfig, AnyFunction, Platform} from './types'
+import timeMark from './utils/timeMark'
+import {of} from './utils/promise'
 
-const useLiveCode = (code: string) => {
+// https://code.visualstudio.com/api/extension-guides/webview#persistence
+const vscode = acquireVsCodeApi()
+
+const emptyValue = {
+  values: [null, void 0],
+  dispose() {
+    /*  */
+  },
+}
+const useLiveCode = (code?: string) => {
   const [asyncValues, setValues] = useState<CallbackParams | []>([])
 
   const {values, dispose} = useMemo(
-    () => runInNewContext(code, {setup: injectImportMap}),
+    () => (code ? runInNewContext(code, {setup: injectImportMap}) : emptyValue),
     [code]
   )
 
@@ -25,12 +36,15 @@ const useLiveCode = (code: string) => {
 
   const isAsync = isPromise(values)
   useEffect(() => {
-    if (isAsync) {
-      values.then(
-        (x) => setValues([null, x]),
-        (x) => setValues([x as Error, void 0])
-      )
-    }
+    void (async () => {
+      if (isAsync) {
+        const timer = timeMark<'browserVM'>()
+        timer.start('browserVM')
+        setValues(await of(values))
+        timer.end('browserVM')
+        vscode.postMessage({type: 'timeMark', data: timer.print()})
+      }
+    })()
   }, [isAsync, values])
 
   return isAsync ? asyncValues : values
@@ -66,9 +80,6 @@ declare global {
     setState(data: unknown): void
   }
 }
-
-// https://code.visualstudio.com/api/extension-guides/webview#persistence
-const vscode = acquireVsCodeApi()
 
 type Data = {
   platform: Platform
@@ -207,7 +218,9 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true)
   const previousState = vscode.getState() as {data: Data}
   const [data, setData] = useState<Data>(previousState?.data ?? '')
-  const [error, values] = useLiveCode(data.code ?? '')
+  const [error, values] = useLiveCode(
+    data.platform === 'browser' ? data.code : void 0
+  )
 
   useEffect(() => {
     document.getElementById('splash')?.remove()
