@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import bundle, {BundleOpts} from '../bundle'
 
 describe('browser', () => {
@@ -23,6 +24,20 @@ describe('browser', () => {
       /Could not resolve "fs"/
     )
   })
+
+  test('transform NODE_ENV', async () => {
+    const name = `process.env.NODE_ENV`
+    expect(await bundle(`call(${name})`, opts)).toMatchObject({
+      js: expect.stringContaining('call("development")'),
+    })
+  })
+
+  test('donot preserve process.env.FOO', async () => {
+    const name = `process.env.MY_VAR`
+    expect(await bundle(`export let x = ${name}`, opts)).toMatchObject({
+      js: expect.not.stringContaining(name),
+    })
+  })
 })
 
 describe('node', () => {
@@ -41,6 +56,20 @@ describe('node', () => {
   test('import core modules', async () => {
     expect(await bundle(`import fs from 'fs'`, opts)).toMatchObject({
       js: expect.stringContaining(`require("fs")`),
+    })
+  })
+
+  test('transform NODE_ENV', async () => {
+    const name = `process.env.NODE_ENV`
+    expect(await bundle(`call(${name})`, opts)).toMatchObject({
+      js: expect.stringContaining('call("development")'),
+    })
+  })
+
+  test('preserve process.env.FOO', async () => {
+    const name = `process.env.MY_VAR`
+    expect(await bundle(`export let x = ${name}`, opts)).toMatchObject({
+      js: expect.stringContaining(name),
     })
   })
 })

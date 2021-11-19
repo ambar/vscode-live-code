@@ -5,7 +5,8 @@ import {fetchBuilder, MemoryCache} from 'node-fetch-cache'
 import httpPlugin from '../../scripts/httpPlugin.mjs'
 
 const fetch = fetchBuilder.withCache(new MemoryCache())
-
+const defaultNodeEnv = 'development'
+const defaultBrowserProcessEnv = {}
 const loaderMap: Record<string, Esbuild.Loader> = {
   '.js': 'jsx',
   '.jsx': 'jsx',
@@ -41,6 +42,9 @@ export type BundleOpts = {
   workspaceFolder?: string
 }
 
+/**
+ * Bundle code in the editor
+ */
 export default async function bundle(
   input: string,
   {filename, workspaceFolder, platform, sourcemap = 'inline'}: BundleOpts
@@ -69,6 +73,13 @@ export default async function bundle(
     sourcemap,
     format: isWeb ? 'esm' : 'cjs',
     logLevel: 'silent',
+    define: {
+      // use `development` for better debug info
+      'process.env.NODE_ENV': JSON.stringify(defaultNodeEnv),
+      ...(isWeb && {
+        'process.env': JSON.stringify(defaultBrowserProcessEnv),
+      }),
+    },
     // ensure there is only one copy of React, see https://reactjs.org/warnings/invalid-hook-call-warning.html#duplicate-react
     // external: isWeb ? ['react', 'react-dom'] : [],
     plugins: [
