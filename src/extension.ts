@@ -2,15 +2,14 @@
 import path from 'path'
 import * as prettyFormat from 'pretty-format'
 import * as vscode from 'vscode'
-import isPromise from 'is-promise'
 import type * as Esbuild from 'esbuild'
-import {Platform, AnyFunction} from './types'
+import type {Platform, AnyFunction} from './types'
 import {bundle} from './extension/bundle'
 import install from './extension/install'
 import getWebviewContent from './extension/getWebviewContent'
 import transform from './sandbox/transform'
 import * as nodeVM from './sandbox/nodeVM'
-import {ExpContext} from './sandbox/types'
+import type {ExpContext} from './sandbox/types'
 
 const NAME = 'Live Code'
 const output = vscode.window.createOutputChannel(NAME)
@@ -43,6 +42,7 @@ const platformTitleMap: Record<Platform, string> = {
 }
 
 const distDir = __dirname
+// FIXME: change to fsPath map
 const documentPanelMap = new Map<vscode.TextDocument, vscode.WebviewPanel>()
 // const documentPanelMap = new WeakMap<vscode.TextDocument, vscode.WebviewPanel>()
 const panelConfigMap = new WeakMap<
@@ -166,11 +166,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (e.type === 'ready') {
           void processDocument(doc)
         } else if (e.type === 'revealLine') {
-          // FIXME: use revealRange or window.showTextDocument?
-          void vscode.commands.executeCommand('revealLine', {
-            lineNumber: e.data.line,
-            at: 'center',
-          })
+          revealSourceLine(e.data)
         } else if (e.type === 'requestReload') {
           void vscode.commands.executeCommand('liveCode.reloadPreview')
         }
@@ -309,4 +305,32 @@ function bundleDocument(document: vscode.TextDocument, platform: Platform) {
   ).catch((e) => {
     throw (e as Esbuild.BuildResult)?.errors?.[0] ?? e
   })
+}
+
+function revealSourceLine(loc: {line: number; column: number}) {
+  const entry = [...documentPanelMap].find(([, x]) => x.active)
+  if (!entry) {
+    return
+  }
+  const [document] = entry
+  const editor = vscode.window.visibleTextEditors.find(
+    (x) => x.document === document
+  )
+
+  if (editor) {
+    revealRange(editor)
+  } else {
+    void vscode.workspace
+      .openTextDocument(document.uri.fsPath)
+      .then(vscode.window.showTextDocument)
+      .then(revealRange)
+  }
+
+  function revealRange(editor: vscode.TextEditor) {
+    const start = new vscode.Position(loc.line, loc.column)
+    editor.revealRange(
+      new vscode.Range(start, start),
+      vscode.TextEditorRevealType.InCenterIfOutsideViewport
+    )
+  }
 }

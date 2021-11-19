@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import {jsx} from '@emotion/react' // eslint-disable-line @typescript-eslint/no-unused-vars
-import React, {useState, useMemo, useEffect} from 'react'
+import React, {useState, useMemo, useEffect, useCallback} from 'react'
 import {render} from 'react-dom'
 import * as prettyFormat from 'pretty-format'
 import isPromise from 'is-promise'
@@ -142,22 +142,23 @@ const Preview: React.FC<PreviewProps> = ({
   inspect = false,
 }) => {
   const result = values || stringifiedValues
+
+  const notifyReveal = useCallback((loc: ExpContext) => {
+    vscode.postMessage({
+      type: 'revealLine',
+      data: {line: loc.line, column: loc.column},
+    })
+  }, [])
+
   if (!result?.length) {
     return null
   }
+
   return (
     <table>
       <tbody>
         {result.map(([r, loc], i) => (
-          <tr
-            key={i}
-            onClick={() => {
-              vscode.postMessage({
-                type: 'revealLine',
-                data: {line: loc.line, column: loc.column},
-              })
-            }}
-          >
+          <tr key={i}>
             <td
               data-line-number={loc.line}
               css={{
@@ -169,6 +170,7 @@ const Preview: React.FC<PreviewProps> = ({
               }}
               title={`Line ${loc.line}, Column ${loc.column}`}
               hidden={!config.showLineNumbers}
+              onClick={() => notifyReveal(loc)}
             >
               <span css={{userSelect: 'none'}}>
                 {loc.line}
@@ -178,7 +180,10 @@ const Preview: React.FC<PreviewProps> = ({
                 )}
               </span>
             </td>
-            <td css={{verticalAlign: 'top'}}>
+            <td
+              css={{verticalAlign: 'top'}}
+              onDoubleClick={() => notifyReveal(loc)}
+            >
               <ErrorBoundary renderError={prettyPrint}>
                 {inspect ? (
                   config.renderJSX && React.isValidElement(r) ? (
