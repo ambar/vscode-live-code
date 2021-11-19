@@ -202,6 +202,12 @@ const prettyPrint = (obj: unknown) =>
     printFunctionName: true,
   })
 
+const of = <T>(value: Promise<T>) => {
+  return value
+    .then((r) => <const>[null, r])
+    .catch((err: unknown) => <const>[err, void 0])
+}
+
 async function processDocument(
   document: vscode.TextDocument,
   shouldReload = false
@@ -215,28 +221,28 @@ async function processDocument(
   setPanelTitleAndIcon(panel, document)
   let error: unknown
   let code: string | void
-  let result: [string, ExpContext][]
-
-  await bundleDocument(document, currentPlatform)
-    .then((r) => {
+  let result: [string, ExpContext][] | void
+  ;[error, code] = await of(
+    bundleDocument(document, currentPlatform).then((r) => {
       // TODO: render .css
-      code = r?.js?.text
+      return r?.js?.text
     })
-    .catch((e: unknown) => (error = e))
-  if (currentPlatform === 'node') {
-    await nodeVM
-      .runInNewContext(code!, {filename: document.uri.fsPath})
-      .then((r) => (result = r))
-      .catch((e: unknown) => (error = prettyPrint(e)))
+  )
+  if (code && currentPlatform === 'node') {
+    ;[error, result] = await of(
+      nodeVM.runInNewContext(code, {filename: document.uri.fsPath})
+    )
   }
+  log('bundle', {error, result})
   void panel.webview.postMessage({
     type: shouldReload ? 'codeReload' : 'code',
+    // data should be serialized
     data: {
       platform: currentPlatform,
       config: {...vscode.workspace.getConfiguration('liveCode')},
-      result: result!,
-      code: code!,
-      error,
+      result,
+      code,
+      error: error && prettyPrint(error),
     },
   })
 }
@@ -298,13 +304,7 @@ function getDefaultPlatform() {
 }
 
 function bundleDocument(document: vscode.TextDocument, platform: Platform) {
-  return bundle(
-    transform(document.getText()),
-    document.uri.fsPath,
-    platform
-  ).catch((e) => {
-    throw (e as Esbuild.BuildResult)?.errors?.[0] ?? e
-  })
+  return bundle(transform(document.getText()), document.uri.fsPath, platform)
 }
 
 function revealSourceLine(loc: {line: number; column: number}) {

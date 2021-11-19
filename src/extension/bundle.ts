@@ -52,7 +52,7 @@ export const bundle = async (
       loader: loaderMap[path.extname(filename)] || 'jsx',
       contents: input,
       resolveDir: workingDir,
-      sourcefile: '<import>' + path.extname(filename),
+      sourcefile: filename,
     },
     absWorkingDir: workingDir,
     outfile,

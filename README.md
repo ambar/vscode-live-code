@@ -15,7 +15,6 @@ TODO:
 - [ ] Show console logs
 - [ ] Support Deno
 - [ ] Run code block in Markdown/MDX
-- [ ] Click-to-reveal source line
 
 ## Usage
 
