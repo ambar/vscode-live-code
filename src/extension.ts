@@ -314,7 +314,8 @@ function bundleDocument(document: vscode.TextDocument, platform: Platform) {
   return bundle(transform(document.getText()), {
     platform,
     filename: document.isUntitled ? undefined : document.uri.fsPath,
-    workspaceFolder: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+    workspaceFolder:
+      vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd(),
   })
 }
 
