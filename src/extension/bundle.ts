@@ -34,14 +34,21 @@ const externalGlobalPlugin = (map: Record<string, string>): Esbuild.Plugin => {
   }
 }
 
+type BundleOpts = {
+  filename?: string
+  workspaceFolder?: string
+  platform: Esbuild.Platform
+}
 export const bundle = async (
   input: string,
-  filename: string,
-  platform: Esbuild.Platform
+  {filename, workspaceFolder, platform}: BundleOpts
 ) => {
+  if (!filename && !workspaceFolder) {
+    throw new Error('Can not resolve `filename` or `workspaceFolder`')
+  }
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const esbuild = require('esbuild') as typeof Esbuild
-  const workingDir = path.dirname(filename)
+  const workingDir = filename ? path.dirname(filename) : workspaceFolder
   const outfile = '<bundle>.js'
   const isWeb = platform === 'browser'
   const isNode = platform === 'node'
@@ -49,10 +56,10 @@ export const bundle = async (
     bundle: true,
     write: false,
     stdin: {
-      loader: loaderMap[path.extname(filename)] || 'jsx',
+      loader: (filename && loaderMap[path.extname(filename)]) || 'jsx',
       contents: input,
       resolveDir: workingDir,
-      sourcefile: filename,
+      sourcefile: filename ?? '<Untitled>',
     },
     absWorkingDir: workingDir,
     outfile,
