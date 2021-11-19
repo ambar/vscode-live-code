@@ -2,9 +2,8 @@
 import path from 'path'
 import * as prettyFormat from 'pretty-format'
 import * as vscode from 'vscode'
-import type * as Esbuild from 'esbuild'
 import type {Platform, AnyFunction} from './types'
-import {bundle} from './extension/bundle'
+import bundle from './extension/bundle'
 import install from './extension/install'
 import getWebviewContent from './extension/getWebviewContent'
 import transform from './sandbox/transform'
@@ -225,7 +224,7 @@ async function processDocument(
   ;[error, code] = await of(
     bundleDocument(document, currentPlatform).then((r) => {
       // TODO: render .css
-      return r?.js?.text
+      return r?.js
     })
   )
   if (code && currentPlatform === 'node') {

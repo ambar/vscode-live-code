@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`browser budnle  1`] = `
+Object {
+  "css": undefined,
+  "js": "",
+}
+`;
+
+exports[`browser budnle export let x = 0 1`] = `
+Object {
+  "css": undefined,
+  "js": "// <Untitled>
+var x = 0;
+export {
+  x
+};
+",
+}
+`;

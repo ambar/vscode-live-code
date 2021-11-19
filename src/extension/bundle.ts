@@ -34,15 +34,17 @@ const externalGlobalPlugin = (map: Record<string, string>): Esbuild.Plugin => {
   }
 }
 
-type BundleOpts = {
+export type BundleOpts = {
+  platform: Esbuild.Platform
+  sourcemap?: Esbuild.BuildOptions['sourcemap']
   filename?: string
   workspaceFolder?: string
-  platform: Esbuild.Platform
 }
-export const bundle = async (
+
+export default async function bundle(
   input: string,
-  {filename, workspaceFolder, platform}: BundleOpts
-) => {
+  {filename, workspaceFolder, platform, sourcemap = 'inline'}: BundleOpts
+) {
   if (!filename && !workspaceFolder) {
     throw new Error('Can not resolve `filename` or `workspaceFolder`')
   }
@@ -64,8 +66,9 @@ export const bundle = async (
     absWorkingDir: workingDir,
     outfile,
     platform,
-    sourcemap: 'inline',
+    sourcemap,
     format: isWeb ? 'esm' : 'cjs',
+    logLevel: 'silent',
     // ensure there is only one copy of React, see https://reactjs.org/warnings/invalid-hook-call-warning.html#duplicate-react
     // external: isWeb ? ['react', 'react-dom'] : [],
     plugins: [
@@ -74,7 +77,7 @@ export const bundle = async (
     ].filter(Boolean),
   })
   const outputs = result.outputFiles
-  const js = outputs.find((x) => x.path.endsWith('.js'))
-  const css = outputs.find((x) => x.path.endsWith('.css'))
+  const js = outputs.find((x) => x.path.endsWith('.js'))?.text
+  const css = outputs.find((x) => x.path.endsWith('.css'))?.text
   return {js, css}
 }
