@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/ambar/vscode-live-code/compare/v0.0.3...v0.0.4) (2021-11-21)
+
+
+### Features
+
+* allow evaluating without workspace folder ([e426900](https://github.com/ambar/vscode-live-code/commit/e4269000acb6931429dbe9508114a83134670b6d))
+* show console logs of browser ([0e108b2](https://github.com/ambar/vscode-live-code/commit/0e108b24e2d9944531e60a7ab30dde6bf7262885))
+
 ### [0.0.3](https://github.com/ambar/vscode-live-code/compare/v0.0.2...v0.0.3) (2021-11-19)
 
 
