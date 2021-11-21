@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import {jsx} from '@emotion/react' // eslint-disable-line @typescript-eslint/no-unused-vars
+import {jsx} from '@emotion/react'
 import React, {useState, useMemo, useEffect, useCallback} from 'react'
 import {render} from 'react-dom'
 import * as prettyFormat from 'pretty-format'
@@ -8,29 +8,39 @@ import type {EvaluationResult, ExpContext} from './sandbox/types'
 import {runInNewContext, CallbackParams} from './sandbox/browserVM'
 import injectImportMap from './sandbox/injectImportMap'
 import {IsDarkModeProvider, useIsDarkMode} from './preview/darkMode'
-// import ConsoleLogs from './preview/ConsoleLogs'
 import ErrorBoundary from './preview/ErrorBoundary'
 import Inspector from './preview/Inspector'
+import {StyledConsole, Hook, Unhook, Message} from './preview/console'
 import {AppConfig, AnyFunction, Platform} from './types'
 import timeMark from './utils/timeMark'
 import {of} from './utils/promise'
 
 // https://code.visualstudio.com/api/extension-guides/webview#persistence
 const vscode = acquireVsCodeApi()
-
 const emptyValue = {
   values: [null, void 0],
-  dispose() {
-    /*  */
-  },
+  dispose() {}, // eslint-disable-line @typescript-eslint/no-empty-function
 }
+
 const useLiveCode = (code?: string) => {
+  const [logs, setLogs] = useState<Message[]>([])
   const [asyncValues, setValues] = useState<CallbackParams | []>([])
 
-  const {values, dispose} = useMemo(
-    () => (code ? runInNewContext(code, {setup: injectImportMap}) : emptyValue),
-    [code]
-  )
+  const {values, dispose} = useMemo(() => {
+    if (!code) {
+      return emptyValue
+    }
+    return runInNewContext(code, {
+      setup: (window: Window) => {
+        injectImportMap(window)
+        Hook(window.console, (x) => setLogs((s) => s.concat(x)), false)
+        return () => {
+          setLogs([])
+          Unhook(window.console)
+        }
+      },
+    })
+  }, [code])
 
   useEffect(() => dispose, [dispose])
 
@@ -47,7 +57,7 @@ const useLiveCode = (code?: string) => {
     })()
   }, [isAsync, values])
 
-  return isAsync ? asyncValues : values
+  return [isAsync ? asyncValues : values, logs] as const
 }
 
 const inspectPromise: prettyFormat.Plugin = {
@@ -218,7 +228,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true)
   const previousState = vscode.getState() as {data: Data}
   const [data, setData] = useState<Data>(previousState?.data ?? '')
-  const [error, values] = useLiveCode(
+  const [[error, values], logs] = useLiveCode(
     data.platform === 'browser' ? data.code : void 0
   )
 
@@ -280,7 +290,15 @@ const App = () => {
   }
 
   return (
-    <div style={{height: '100%'}}>
+    <div
+      css={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        height: '100%',
+        fontFamily: 'var(--vscode-editor-font-family)',
+        fontSize: 'var(--vscode-editor-font-size)',
+      }}
+    >
       <style>{`
         .shiki {
           margin: 0;
@@ -308,17 +326,16 @@ const App = () => {
           margin: 0,
           padding: 10,
           whiteSpace: 'pre-line',
-          fontFamily: 'var(--vscode-editor-font-family)',
-          fontSize: 'var(--vscode-editor-font-size)',
           lineHeight: 1.5,
-          overflow: 'auto',
           boxSizing: 'border-box',
-          WebkitOverflowScrolling: 'auto',
+          // overflow: 'auto',
+          // WebkitOverflowScrolling: 'auto',
         }}
       >
         {content}
       </pre>
-      {/* <ConsoleLogs /> */}
+      {/* TODO: filter console calls in preview, which returns `undefined` */}
+      {logs.length > 0 && <StyledConsole logs={logs} />}
     </div>
   )
 }

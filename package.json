@@ -121,7 +121,7 @@
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
-          "varsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_|^jsx$",
           "argsIgnorePattern": "^_"
         }
       ]
@@ -149,7 +149,7 @@
     "@types/react-inspector": "^4.0.2",
     "@types/vscode": "^1.61.0",
     "@vscode/webview-ui-toolkit": "^0.8.3",
-    "console-feed": "samdenty/console-feed#0405ab2",
+    "console-feed": "ambar/console-feed#inline-center",
     "es-jest": "^1.5.0",
     "is-promise": "^4.0.0",
     "jest": "^27.3.1",
@@ -157,6 +157,7 @@
     "pretty-format": "^27.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-inline-center": "^1.0.1",
     "react-inspector": "^5.1.1",
     "recast": "^0.20.5",
     "recommended": "^0.0.7",

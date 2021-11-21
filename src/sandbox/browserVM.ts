@@ -18,7 +18,7 @@ const createContext = () => {
 
 type RunOpts = {
   modules?: boolean
-  setup?(g: Window | typeof globalThis): void
+  setup?(g: Window | typeof globalThis): void | (() => void)
 }
 
 export type CallbackParams = [err: null | Error, values?: EvaluationResult[]]
@@ -31,18 +31,16 @@ export const runInNewContext = (
   {modules = true, setup}: RunOpts = {}
 ) => {
   let ctx: ReturnType<typeof createContext>
+  let teardown: void | (() => void)
   const dispose = () => {
-    if (ctx) {
-      ctx.dispose()
-    }
+    teardown?.()
+    ctx?.dispose()
   }
 
   const run = (callback: (...args: CallbackParams) => void) => {
     ctx = createContext()
     ctx.run((global) => {
-      if (setup) {
-        setup(global)
-      }
+      teardown = setup?.(global)
       const values: EvaluationResult[] = []
       Object.assign(global, {
         __onexpression__: (r: unknown, loc: ExpContext) => {

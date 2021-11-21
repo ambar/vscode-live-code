@@ -3,7 +3,7 @@ import * as ri from 'react-inspector'
 import {useIsDarkMode} from './darkMode'
 
 // https://github.com/storybookjs/react-inspector/blob/master/src/styles/themes/chromeDark.js
-const baseStyles = {
+export const baseInspectorStyles = {
   // inherit style from web view
   BASE_FONT_FAMILY: 'inherit',
   BASE_FONT_SIZE: 'inherit',
@@ -13,8 +13,8 @@ const baseStyles = {
   TREENODE_FONT_SIZE: 'inherit',
   TREENODE_LINE_HEIGHT: 'inherit',
 }
-const darkTheme = {...ri.chromeDark, ...baseStyles}
-const lightTheme = {...ri.chromeLight, ...baseStyles}
+const darkTheme = {...ri.chromeDark, ...baseInspectorStyles}
+const lightTheme = {...ri.chromeLight, ...baseInspectorStyles}
 
 const useInspectorTheme = () => {
   const isDarkMode = useIsDarkMode()

@@ -9,10 +9,11 @@ Interactive code playground.
 - Support TypeScript/JSX
 - Support URL imports
 - Support custom [paths](https://www.typescriptlang.org/tsconfig/#paths) in tsconfig or jsconfig
+- Support top-level await (browser only)
+- Render JSX elements (browser only)
 
 TODO:
 
-- [ ] Show console logs
 - [ ] Support Deno
 - [ ] Run code block in Markdown/MDX
 
@@ -28,7 +29,7 @@ Open _Command Palette_, choose `Live Code: Open Preview to the Side`, or simply 
 
 ## Extension Settings
 
-```jsonc
+```json
 {
   "liveCode.defaultPlatform": {
     "type": "string",
