@@ -99,7 +99,7 @@
   },
   "scripts": {
     "prepare": "yarn copy && yarn build",
-    "build:vscode": "vsce package --yarn",
+    "build:vscode": "vsce package --yarn --no-dependencies",
     "vscode:prepublish": "npm run build",
     "prewatch": "yarn setup",
     "watch": "node scripts/build-all.mjs --watch --sourcemap",
