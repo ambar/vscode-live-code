@@ -43,13 +43,20 @@ const platformTitleMap: Record<Platform, string> = {
 }
 
 const distDir = __dirname
-// FIXME: change to fsPath map
+// TODO: change to fsPath map
 const documentPanelMap = new Map<vscode.TextDocument, vscode.WebviewPanel>()
-// const documentPanelMap = new WeakMap<vscode.TextDocument, vscode.WebviewPanel>()
+// config send to preview
 const panelConfigMap = new WeakMap<
   vscode.WebviewPanel,
   {
     currentPlatform: Platform
+  }
+>()
+// instance data
+const panelDataMap = new WeakMap<
+  vscode.WebviewPanel,
+  {
+    workerRef: Exclude<nodeVM.RunOpts['workerRef'], void>
   }
 >()
 let installPromise: ReturnType<typeof install>
@@ -160,6 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
       )
       documentPanelMap.set(doc, panel)
       panelConfigMap.set(panel, {currentPlatform: getDefaultPlatform()})
+      panelDataMap.set(panel, {workerRef: {current: null}})
       setPanelTitleAndIcon(panel, doc)
       setWebviewContent(panel.webview)
       panel.webview.onDidReceiveMessage((e: {type: string; data: unknown}) => {
@@ -191,6 +199,7 @@ export function activate(context: vscode.ExtensionContext) {
         setIsPreviewFocus(false)
         documentPanelMap.delete(doc)
         panelConfigMap.delete(panel)
+        panelDataMap.delete(panel)
       })
     })
   )
@@ -232,8 +241,13 @@ async function processDocument(
   timer.end('bundle')
   if (code && currentPlatform === 'node') {
     timer.start('nodeVM')
+    const {workerRef} = panelDataMap.get(panel)!
+    if (workerRef.current) {
+      // terminate prev worker for each run
+      console.info('terminate', await workerRef.current.terminate())
+    }
     ;[error, result] = await of(
-      nodeVM.runInNewContext(code, {filename: document.uri.fsPath})
+      nodeVM.runInNewContext(code, {filename: document.uri.fsPath, workerRef})
     )
     timer.end('nodeVM')
   }
