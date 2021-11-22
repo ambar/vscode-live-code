@@ -2,6 +2,8 @@
 
 Interactive code playground.
 
+![screenshot-1](./example/screenshot-1.png)
+
 ## Features
 
 - Automatically evaluate all top-level expressions
@@ -20,8 +22,6 @@ TODO:
 ## Usage
 
 Open _Command Palette_, choose `Live Code: Open Preview to the Side`, or simply click the preview button in the title, or use the shortcut `cmd` + `k l`.
-
-![screenshot-1](./example/screenshot-1.png)
 
 ## Requirements
 
