@@ -10,7 +10,7 @@ import injectImportMap from './sandbox/injectImportMap'
 import {IsDarkModeProvider, useIsDarkMode} from './preview/darkMode'
 import ErrorBoundary from './preview/ErrorBoundary'
 import Inspector from './preview/Inspector'
-import {StyledConsole, Hook, Unhook, Message} from './preview/console'
+import {StyledConsole, Hook, Unhook, Decode, Message} from './preview/console'
 import {AppConfig, AnyFunction, Platform} from './types'
 import timeMark from './utils/timeMark'
 import {of} from './utils/promise'
@@ -96,6 +96,7 @@ type Data = {
   error?: unknown
   code?: string
   result?: [string, ExpContext][]
+  logs: Message[]
   config: {
     defaultPlatform: Platform
     renderJSX: boolean
@@ -227,10 +228,13 @@ const Preview: React.FC<PreviewProps> = ({
 const App = () => {
   const [isLoading, setIsLoading] = useState(true)
   const previousState = vscode.getState() as {data: Data}
-  const [data, setData] = useState<Data>(previousState?.data ?? '')
-  const [[error, values], logs] = useLiveCode(
-    data.platform === 'browser' ? data.code : void 0
+  const [data, setData] = useState<Data>(previousState?.data ?? {logs: []})
+  const isBrowser = data.platform === 'browser'
+  const [[error, values], browserLogs] = useLiveCode(
+    isBrowser ? data.code : void 0
   )
+  // TODO: decode logs for Node.js
+  const logs = isBrowser ? browserLogs : data.logs
 
   useEffect(() => {
     document.getElementById('splash')?.remove()
@@ -335,7 +339,9 @@ const App = () => {
         {content}
       </pre>
       {/* TODO: filter console calls in preview, which returns `undefined` */}
-      {logs.length > 0 && <StyledConsole logs={logs} />}
+      {logs?.length > 0 && (
+        <StyledConsole logs={logs} shouldDecode={!isBrowser} />
+      )}
     </div>
   )
 }

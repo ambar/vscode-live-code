@@ -2,16 +2,32 @@ console.warn(0)
 console.info(1)
 console.log(2)
 console.error(3)
-console.debug(3)
+console.debug(4)
 
-void ((...args) => {
+void (async () => {
   console.time('fn')
-  console.info('fn', args)
+  await new Promise((r) => setTimeout(r, 10))
+  console.info('fn:run')
   console.timeEnd('fn')
-})('a', 'b')
-console.log({a: 1, b: 2, f: () => {}})
+})()
+
+console.info(
+  new Map([
+    ['a', 1],
+    ['b', 2],
+  ]),
+  new Set([1, 2]),
+  new TextEncoder().encode('xyz'),
+  () => {}
+)
+
 console.dir({a: 1, b: 2})
 
+setTimeout(() => {
+  console.info('setTimeout')
+}, 1000)
+
+let count = 0
 setInterval(() => {
-  console.log({a: 1, b: 2})
-}, 500)
+  console.info('setInterval', count++)
+}, 1000)

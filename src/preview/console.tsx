@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import {jsx} from '@emotion/react'
-import React from 'react'
-import * as cf from 'console-feed/src'
+import React, {useMemo} from 'react'
+import {Console, Decode} from 'console-feed/src'
 import type {Message} from 'console-feed/src/definitions/Component'
 import type {Styles} from 'console-feed/src/definitions/Styles'
 import {baseInspectorStyles} from './Inspector'
@@ -29,13 +29,14 @@ const debugIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" x
 const toImageURL = (svg: string) =>
   `url("data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}")`
 
+// https://github.com/samdenty/console-feed/pull/96
+// https://github.com/samdenty/console-feed/pull/97
 const darkStyles: Styles = {
   ...baseInspectorStyles,
-  LOG_BORDER: 'rgba(128,128,128,0.1)',
   LOG_ICON_WIDTH: '1em',
   LOG_ICON_HEIGHT: '1em',
   LOG_ICON_BACKGROUND_SIZE: 'contain',
-  // repalce original PNG icons with vector icons
+  // replace original PNG icons with vector icons
   LOG_INFO_ICON: toImageURL(infoSVG),
   LOG_WARN_ICON: toImageURL(warnSVG),
   LOG_ERROR_ICON: toImageURL(errorIcon),
@@ -44,17 +45,30 @@ const darkStyles: Styles = {
 
 const lightStyles = {
   ...darkStyles,
-  LOG_COLOR: 'inherit',
-  LOG_WARN_BACKGROUND: 'rgb(255,250,220)',
-  LOG_ERROR_BACKGROUND: 'rgb(255,235,235)',
 }
 
 type Props = {
   logs: Message[]
+  shouldDecode?: boolean
 }
 
-export const StyledConsole: React.FC<Props> = ({logs, ...props}) => {
+const decodeLogs = (logs: Message[]) => {
+  return logs.map((log) => ({
+    ...log,
+    data: log.data.map((x) => Decode([x])),
+  }))
+}
+
+export const StyledConsole: React.FC<Props> = ({
+  logs,
+  shouldDecode = false,
+  ...props
+}) => {
   const isDarkMode = useIsDarkMode()
+  const decoded = useMemo(
+    () => (shouldDecode ? decodeLogs(logs) : logs),
+    [logs, shouldDecode]
+  )
 
   return (
     <div
@@ -65,10 +79,8 @@ export const StyledConsole: React.FC<Props> = ({logs, ...props}) => {
       }}
       {...props}
     >
-      <cf.Console
-        // https://github.com/samdenty/console-feed/pull/96
-        key={String(isDarkMode)}
-        logs={logs}
+      <Console
+        logs={decoded}
         styles={isDarkMode ? darkStyles : lightStyles}
         variant={isDarkMode ? 'dark' : 'light'}
       />

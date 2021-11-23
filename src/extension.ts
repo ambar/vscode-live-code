@@ -199,6 +199,7 @@ export function activate(context: vscode.ExtensionContext) {
         setIsPreviewFocus(false)
         documentPanelMap.delete(doc)
         panelConfigMap.delete(panel)
+        panelDataMap.get(panel)?.workerRef?.current?.terminate()
         panelDataMap.delete(panel)
       })
     })
@@ -225,10 +226,16 @@ async function processDocument(
     return
   }
   await installPromise
+
+  // terminate prev worker for each run
+  const workerRef = panelDataMap.get(panel)?.workerRef
+  await workerRef?.current?.terminate()
+
   const {currentPlatform} = panelConfigMap.get(panel)!
   setPanelTitleAndIcon(panel, document)
   let error: unknown
   let code: string | void
+  let logs: []
   let result: [string, ExpContext][] | void
   const timer = timeMark<'bundle' | 'nodeVM' | 'postMessage'>()
   timer.start('bundle')
@@ -241,30 +248,38 @@ async function processDocument(
   timer.end('bundle')
   if (code && currentPlatform === 'node') {
     timer.start('nodeVM')
-    const {workerRef} = panelDataMap.get(panel)!
-    if (workerRef.current) {
-      // terminate prev worker for each run
-      console.info('terminate', await workerRef.current.terminate())
-    }
-    ;[error, result] = await of(
-      nodeVM.runInNewContext(code, {filename: document.uri.fsPath, workerRef})
+    ;[error, {result, logs} = {}] = await of(
+      nodeVM.runInNewContext(code, {
+        filename: document.uri.fsPath,
+        workerRef,
+        onUpdate(r) {
+          result = r.result
+          logs = r.logs
+          void sendMessage()
+        },
+      })
     )
     timer.end('nodeVM')
   }
   timer.start('postMessage')
-  await panel.webview.postMessage({
-    type: shouldReload ? 'codeReload' : 'code',
-    // data should be serialized
-    data: {
-      platform: currentPlatform,
-      config: {...vscode.workspace.getConfiguration('liveCode')},
-      result,
-      code,
-      error: error && prettyPrint(error),
-    },
-  })
+  await sendMessage()
   timer.end('postMessage')
   log(timer.print())
+
+  function sendMessage() {
+    return panel!.webview.postMessage({
+      type: shouldReload ? 'codeReload' : 'code',
+      // data should be serialized
+      data: {
+        platform: currentPlatform,
+        config: {...vscode.workspace.getConfiguration('liveCode')},
+        result,
+        logs,
+        code,
+        error: error && prettyPrint(error),
+      },
+    })
+  }
 }
 
 function debounce<T extends AnyFunction<void>>(fn: T, wait: number) {

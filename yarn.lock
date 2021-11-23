@@ -1919,9 +1919,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"console-feed@ambar/console-feed#inline-center":
+"console-feed@ambar/console-feed#d6c12c6ce34788961d77a32ad4d36ae875ee27d1":
   version: 3.2.2
-  resolution: "console-feed@https://github.com/ambar/console-feed.git#commit=f86dbca3a840493e5041d98e5e7ee4ef25eecd0f"
+  resolution: "console-feed@https://github.com/ambar/console-feed.git#commit=d6c12c6ce34788961d77a32ad4d36ae875ee27d1"
   dependencies:
     "@emotion/core": ^10.0.10
     "@emotion/styled": ^10.0.12
@@ -1931,7 +1931,7 @@ __metadata:
     react-inspector: ^5.1.0
   peerDependencies:
     react: ^15.x || ^16.x || ^17.x
-  checksum: 6050a60d3d78ee1b9dff13cad90ddd3ebf484673a92477735fc36d20809a4e53968d549b58886a3ff53325628650285f7bca24007e5ce4f1d38f661a9d69490c
+  checksum: 1b46a81d87ba67e07d0afd4515fc7a01e9c9ae6183755eaed1cf14033b5852ef6763c5ba62906caad102ba6d1dd5a2743db1e88fc1e00d7877b0544994884e83
   languageName: node
   linkType: hard
 
@@ -3963,7 +3963,7 @@ __metadata:
     "@types/react-inspector": ^4.0.2
     "@types/vscode": ^1.61.0
     "@vscode/webview-ui-toolkit": ^0.8.3
-    console-feed: "ambar/console-feed#inline-center"
+    console-feed: "ambar/console-feed#d6c12c6ce34788961d77a32ad4d36ae875ee27d1"
     es-jest: ^1.5.0
     esbuild: ^0.13.12
     is-promise: ^4.0.0
