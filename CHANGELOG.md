@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/ambar/vscode-live-code/compare/v0.0.4...v0.0.5) (2021-11-23)
+
+
+### Features
+
+* show console logs on Node.js ([dc57dc9](https://github.com/ambar/vscode-live-code/commit/dc57dc903d80bf7a5ac7d110a3d44ab62516fedf))
+
+
+### Bug Fixes
+
+* terminate Node worker for each run ([a80a19a](https://github.com/ambar/vscode-live-code/commit/a80a19acf24058853a373976e241483796781f2f))
+
 ### [0.0.4](https://github.com/ambar/vscode-live-code/compare/v0.0.3...v0.0.4) (2021-11-21)
 
 
