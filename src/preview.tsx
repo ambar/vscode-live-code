@@ -331,6 +331,8 @@ const App = () => {
           whiteSpace: 'pre-line',
           lineHeight: 1.5,
           boxSizing: 'border-box',
+          fontFamily: 'inherit',
+          fontSize: 'inherit',
         }}
       >
         {content}
