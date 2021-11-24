@@ -233,7 +233,6 @@ const App = () => {
   const [[error, values], browserLogs] = useLiveCode(
     isBrowser ? data.code : void 0
   )
-  // TODO: decode logs for Node.js
   const logs = isBrowser ? browserLogs : data.logs
 
   useEffect(() => {
@@ -332,8 +331,6 @@ const App = () => {
           whiteSpace: 'pre-line',
           lineHeight: 1.5,
           boxSizing: 'border-box',
-          // overflow: 'auto',
-          // WebkitOverflowScrolling: 'auto',
         }}
       >
         {content}

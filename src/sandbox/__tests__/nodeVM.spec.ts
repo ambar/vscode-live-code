@@ -121,7 +121,6 @@ test('console', async () => {
   expect(last.length).toBe(5)
   const logString = JSON.stringify(last)
   expect(logString).toContain('foo')
-  // TODO: decode
   expect(logString).toContain('[[Map]]')
   expect(logString).toContain('ms')
 
