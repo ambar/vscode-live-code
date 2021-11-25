@@ -38,6 +38,20 @@ describe('browser', () => {
       js: expect.not.stringContaining(name),
     })
   })
+
+  test('bundle untitled TS file - fail', async () => {
+    await expect(bundle(`type foo = 1`, {...opts})).rejects.toThrowError(
+      /error: Expected/
+    )
+  })
+
+  test('bundle untitled TS file - pass', async () => {
+    expect(
+      await bundle(`type foo = 1`, {...opts, languageId: 'typescript'})
+    ).toMatchObject({
+      js: '',
+    })
+  })
 })
 
 describe('node', () => {

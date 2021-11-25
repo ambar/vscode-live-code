@@ -13,6 +13,13 @@ const loaderMap: Record<string, Esbuild.Loader> = {
   '.ts': 'ts',
   '.tsx': 'tsx',
 }
+// loader map for untitled files
+const languageIdLoaderMap: Record<string, Esbuild.Loader> = {
+  javascript: 'js',
+  javascriptreact: 'jsx',
+  typescript: 'ts',
+  typescriptreact: 'tsx',
+}
 
 // https://github.com/evanw/esbuild/issues/337#issuecomment-706765332
 const externalGlobalPlugin = (map: Record<string, string>): Esbuild.Plugin => {
@@ -40,6 +47,7 @@ export type BundleOpts = {
   sourcemap?: Esbuild.BuildOptions['sourcemap']
   filename?: string
   workspaceFolder?: string
+  languageId?: string
 }
 
 /**
@@ -47,7 +55,13 @@ export type BundleOpts = {
  */
 export default async function bundle(
   input: string,
-  {filename, workspaceFolder, platform, sourcemap = 'inline'}: BundleOpts
+  {
+    filename,
+    workspaceFolder,
+    platform,
+    languageId,
+    sourcemap = 'inline',
+  }: BundleOpts
 ) {
   if (!filename && !workspaceFolder) {
     throw new Error('Can not resolve `filename` or `workspaceFolder`')
@@ -62,7 +76,10 @@ export default async function bundle(
     bundle: true,
     write: false,
     stdin: {
-      loader: (filename && loaderMap[path.extname(filename)]) || 'jsx',
+      loader:
+        (filename && loaderMap[path.extname(filename)]) ||
+        (languageId && languageIdLoaderMap[languageId]) ||
+        'jsx',
       contents: input,
       resolveDir: workingDir,
       sourcefile: filename ?? '<Untitled>',
