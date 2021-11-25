@@ -5,7 +5,7 @@
   "description": "Interactive code playground",
   "license": "MIT",
   "version": "0.0.6",
-  "preview": true,
+  "private": true,
   "repository": {
     "url": "https://github.com/ambar/vscode-live-code.git",
     "directory": "vscode-live-code"
