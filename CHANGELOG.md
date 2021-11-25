@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/ambar/vscode-live-code/compare/v0.0.5...v0.0.6) (2021-11-25)
+
+
+### Bug Fixes
+
+* add loader for untitled files ([6818862](https://github.com/ambar/vscode-live-code/commit/6818862f542bf534fd31f3a293892a323bcaa550)), closes [#1](https://github.com/ambar/vscode-live-code/issues/1)
+* inherit font style in preview ([8aa7e6d](https://github.com/ambar/vscode-live-code/commit/8aa7e6d976cc6f8acffe215cba0561efc986093e))
+
 ### [0.0.5](https://github.com/ambar/vscode-live-code/compare/v0.0.4...v0.0.5) (2021-11-23)
 
 
