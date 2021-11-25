@@ -9,7 +9,7 @@ describe('browser', () => {
   }
 
   const cases = ['', 'export let x = 0']
-  test.each(cases)('budnle %s', async (x) => {
+  test.each(cases)('bundle %s', async (x) => {
     expect(await bundle(x, opts)).toMatchSnapshot()
   })
 
