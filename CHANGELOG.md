@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/ambar/vscode-live-code/compare/v0.0.6...v0.0.7) (2021-12-01)
+
+
+### Features
+
+* render CSS in browser platform ([06b9b0e](https://github.com/ambar/vscode-live-code/commit/06b9b0eb83e3eb7e0f24251e383f2f44e38f8a95))
+
 ### [0.0.6](https://github.com/ambar/vscode-live-code/compare/v0.0.5...v0.0.6) (2021-11-25)
 
 
