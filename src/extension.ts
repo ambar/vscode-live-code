@@ -232,15 +232,20 @@ async function processDocument(
   await workerRef?.current?.terminate()
 
   const {currentPlatform} = panelConfigMap.get(panel)!
+  const isBrowser = currentPlatform === 'browser'
   setPanelTitleAndIcon(panel, document)
   let error: unknown
   let code: string | void
+  let css: string | void
   let logs: []
   let result: [string, ExpContext][] | void
   const timer = timeMark<'bundle' | 'nodeVM' | 'postMessage'>()
   timer.start('bundle')
   ;[error, code] = await of(
     bundleDocument(document, currentPlatform).then((r) => {
+      if (isBrowser) {
+        css = r?.css
+      }
       // TODO: render .css
       return r?.js
     })
@@ -276,6 +281,7 @@ async function processDocument(
         result,
         logs,
         code,
+        css,
         error: error && prettyPrint(error),
       },
     })

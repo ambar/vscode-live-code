@@ -7,10 +7,11 @@ import isPromise from 'is-promise'
 import type {EvaluationResult, ExpContext} from './sandbox/types'
 import {runInNewContext, CallbackParams} from './sandbox/browserVM'
 import injectImportMap from './sandbox/injectImportMap'
+import injectCSS from './sandbox/injectCSS'
 import {IsDarkModeProvider, useIsDarkMode} from './preview/darkMode'
 import ErrorBoundary from './preview/ErrorBoundary'
 import Inspector from './preview/Inspector'
-import {StyledConsole, Hook, Unhook, Decode, Message} from './preview/console'
+import {StyledConsole, Hook, Unhook, Message} from './preview/console'
 import {AppConfig, AnyFunction, Platform} from './types'
 import timeMark from './utils/timeMark'
 import {of} from './utils/promise'
@@ -22,7 +23,7 @@ const emptyValue = {
   dispose() {}, // eslint-disable-line @typescript-eslint/no-empty-function
 }
 
-const useLiveCode = (code?: string) => {
+const useLiveCode = (code?: string, css?: string) => {
   const [logs, setLogs] = useState<Message[]>([])
   const [asyncValues, setValues] = useState<CallbackParams | []>([])
 
@@ -33,14 +34,17 @@ const useLiveCode = (code?: string) => {
     return runInNewContext(code, {
       setup: (window: Window) => {
         injectImportMap(window)
+        // inject to this context
+        const injectCSSDisposer = injectCSS(globalThis.window, css)
         Hook(window.console, (x) => setLogs((s) => s.concat(x)), false)
         return () => {
           setLogs([])
           Unhook(window.console)
+          injectCSSDisposer()
         }
       },
     })
-  }, [code])
+  }, [code, css])
 
   useEffect(() => dispose, [dispose])
 
@@ -95,6 +99,7 @@ type Data = {
   platform: Platform
   error?: unknown
   code?: string
+  css?: string
   result?: [string, ExpContext][]
   logs: Message[]
   config: {
@@ -231,7 +236,8 @@ const App = () => {
   const [data, setData] = useState<Data>(previousState?.data ?? {logs: []})
   const isBrowser = data.platform === 'browser'
   const [[error, values], browserLogs] = useLiveCode(
-    isBrowser ? data.code : void 0
+    isBrowser ? data.code : void 0,
+    isBrowser ? data.css : void 0
   )
   const logs = isBrowser ? browserLogs : data.logs
 
